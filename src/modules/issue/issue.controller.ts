@@ -57,8 +57,8 @@ const getSingleIssue = async (req: Request, res: Response) => {
 //* Update Issue
 const updateIssue = async (req: Request, res: Response) => {
   const { id } = req.params;
-
   const token = req.headers.authorization as string;
+
   const updatedIssueData = await issueService.updateIssueIntoDB(
     req.body,
     id as string,

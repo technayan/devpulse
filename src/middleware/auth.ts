@@ -1,8 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
-import jwt, { type JwtPayload } from "jsonwebtoken";
-import config from "../config";
 import { pool } from "../db";
 import type { UserRole } from "../modules/auth/auth.interface";
+import { decodeToken } from "../utils/decodeToken";
 import sendResponse from "../utils/sendResponse";
 
 const auth = (...roles: UserRole[]) => {
@@ -18,10 +17,7 @@ const auth = (...roles: UserRole[]) => {
     }
 
     //* Decode token
-    const decoded = jwt.verify(
-      token as string,
-      config.jwt_token_secret,
-    ) as JwtPayload;
+    const decoded = decodeToken(token as string);
 
     //* Search user
     const userData = await pool.query(

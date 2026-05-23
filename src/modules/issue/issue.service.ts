@@ -182,12 +182,14 @@ const updateIssueIntoDB = async (
   const issue = getIssueData.rows[0];
 
   // Check issue creator and role
-  if (issue.reporter_id !== decoded.id && decoded.role !== "maintainer") {
-    throw new Error("Forbidden access!");
-  }
+  if (decoded.role !== "maintainer") {
+    if (issue.reporter_id !== decoded.id) {
+      throw new Error("Forbidden access!");
+    }
 
-  if (decoded.role !== "maintainer" && issue.status !== "open") {
-    throw new Error("Forbidden access!");
+    if (issue.status !== "open") {
+      throw new Error("Forbidden access!");
+    }
   }
 
   const { title, description, type } = payload;
@@ -199,7 +201,8 @@ const updateIssueIntoDB = async (
       SET 
       title = COALESCE ($1, title),
       description = COALESCE ($2, description),
-      type = COALESCE ($3, type)
+      type = COALESCE ($3, type),
+      updated_at = CURRENT_TIMESTAMP
       WHERE id = $4
       RETURNING *
     `,

@@ -1,3 +1,4 @@
+import cors from "cors";
 import express, {
   type Application,
   type Request,
@@ -10,6 +11,12 @@ import { issueRouter } from "./modules/issue/issue.route";
 const app: Application = express();
 
 app.use(express.json());
+
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://devpulse-two-pi.vercel.app/"],
+  }),
+);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Root route");
