@@ -5,3 +5,9 @@ export interface IIssue {
   status: string;
   reporter_id: number;
 }
+
+export interface IUpdateIssue {
+  title?: string;
+  description?: string;
+  type?: string;
+}

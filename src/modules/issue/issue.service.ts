@@ -1,5 +1,7 @@
+import jwt, { type JwtPayload } from "jsonwebtoken";
+import config from "../../config";
 import { pool } from "../../db";
-import type { IIssue } from "./issue.interface";
+import type { IIssue, IUpdateIssue } from "./issue.interface";
 
 //* CREATE ISSUE INTO DB
 const createIssueIntoDB = async (payload: IIssue & { id: number }) => {
@@ -146,8 +148,67 @@ const getSingleIssueFromDB = async (id: string) => {
   return formattedIssue;
 };
 
+//* UPDATE ISSUE INTO DB
+const updateIssueIntoDB = async (
+  payload: IUpdateIssue,
+  issueId: string,
+  token: string,
+) => {
+  // Check token
+  if (!token) {
+    throw new Error("Unauthorized access!");
+  }
+
+  const decoded = jwt.verify(token, config.jwt_token_secret) as JwtPayload;
+
+  console.log(decoded);
+
+  if (!(decoded.role === "maintainer" || decoded.role === "contributor")) {
+    throw new Error("Unauthorized access!");
+  }
+
+  const getIssueData = await pool.query(
+    `
+      SELECT * FROM issues
+      WHERE id = $1
+    `,
+    [issueId],
+  );
+
+  if (getIssueData.rows.length === 0) {
+    throw new Error("Issue not found!");
+  }
+
+  const issue = getIssueData.rows[0];
+  console.log(issue.reporter_id === decoded.id);
+
+  if (issue.reporter_id !== decoded.id && decoded.role !== "maintainer") {
+    throw new Error("Unauthorized access!");
+  }
+
+  const { title, description, type } = payload;
+
+  const updatedIssue = await pool.query(
+    `
+      UPDATE issues
+      SET 
+      title = COALESCE ($1, title),
+      description = COALESCE ($2, description),
+      type = COALESCE ($3, type)
+      WHERE id = $4
+      RETURNING *
+    `,
+    [title, description, type, issueId],
+  );
+
+  console.log(updatedIssue);
+
+  return updatedIssue;
+};
+
 export const issueService = {
   createIssueIntoDB,
   getAllIssuesFromDB,
   getSingleIssueFromDB,
+  updateIssueIntoDB,
 };
