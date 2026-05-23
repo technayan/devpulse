@@ -1,6 +1,7 @@
 import { pool } from "../../db";
 import type { IIssue } from "./issue.interface";
 
+//* CREATE ISSUE INTO DB
 const createIssueIntoDB = async (payload: IIssue & { id: number }) => {
   const { title, description, type, status, id } = payload;
 
@@ -16,16 +17,51 @@ const createIssueIntoDB = async (payload: IIssue & { id: number }) => {
   return result;
 };
 
-const getAllIssuesFromDB = async () => {
+//* GET ALL ISSUES
+const getAllIssuesFromDB = async (
+  sort?: string,
+  type?: string,
+  status?: string,
+) => {
+  // Sorting query
+  let orderBy = "ORDER BY created_at DESC";
+
+  if (sort === "oldest") {
+    orderBy = "ORDER BY created_at ASC";
+  }
+
+  // Filter
+  const values: string[] = [];
+  const conditions: string[] = [];
+
+  // Type filtering
+  if (type) {
+    values.push(type);
+    conditions.push(`type = $${values.length}`);
+  }
+
+  // Status Filtering
+  if (status) {
+    values.push(status);
+    conditions.push(`status = $${values.length}`);
+  }
+
+  // Filtering Query
+  const filterQuery =
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
   // Getting All Issues
   const allIssues = await pool.query(
     `
       SELECT * FROM issues
+      ${filterQuery}
+      ${orderBy}
     `,
+    values,
   );
 
   // Getting All the user's ids who created issues
-  const userIds = allIssues.rows.map((user) => user.id);
+  const userIds = allIssues.rows.map((issue) => issue.reporter_id);
 
   const dynamicPlaceholder = userIds
     .map((id, index) => `$${index + 1}`)
