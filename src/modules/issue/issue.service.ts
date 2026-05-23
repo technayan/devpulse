@@ -161,12 +161,12 @@ const updateIssueIntoDB = async (
 
   const decoded = jwt.verify(token, config.jwt_token_secret) as JwtPayload;
 
-  console.log(decoded);
-
+  // Check role
   if (!(decoded.role === "maintainer" || decoded.role === "contributor")) {
     throw new Error("Unauthorized access!");
   }
 
+  // Get issue
   const getIssueData = await pool.query(
     `
       SELECT * FROM issues
@@ -179,6 +179,7 @@ const updateIssueIntoDB = async (
     throw new Error("Issue not found!");
   }
 
+  // Check issue creator
   const issue = getIssueData.rows[0];
   console.log(issue.reporter_id === decoded.id);
 
@@ -188,6 +189,7 @@ const updateIssueIntoDB = async (
 
   const { title, description, type } = payload;
 
+  // Update issue
   const updatedIssue = await pool.query(
     `
       UPDATE issues
@@ -206,9 +208,33 @@ const updateIssueIntoDB = async (
   return updatedIssue;
 };
 
+//* DELETE ISSUE FROM DB
+const deleteIssueFromDB = async (id: string, token: string) => {
+  if (!token) {
+    throw new Error("Unauthorized access");
+  }
+
+  const decoded = jwt.verify(token, config.jwt_token_secret) as JwtPayload;
+
+  if (decoded.role !== "maintainer") {
+    throw new Error("Unauthorized access");
+  }
+
+  const result = await pool.query(
+    `
+      DELETE from issues
+      WHERE id = $1
+    `,
+    [id],
+  );
+
+  return result;
+};
+
 export const issueService = {
   createIssueIntoDB,
   getAllIssuesFromDB,
   getSingleIssueFromDB,
   updateIssueIntoDB,
+  deleteIssueFromDB,
 };

@@ -73,9 +73,35 @@ const updateIssue = async (req: Request, res: Response) => {
   });
 };
 
+//* Delete Issue
+const deleteIssue = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const token = req.headers.authorization;
+
+  const result = await issueService.deleteIssueFromDB(
+    id as string,
+    token as string,
+  );
+
+  if (result.rowCount === 0) {
+    sendResponse(res, {
+      statusCode: 404,
+      success: false,
+      message: "Issue not found!",
+    });
+  }
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Issue deleted successfully",
+  });
+};
+
 export const issueController = {
   createIssue,
   getAllIssues,
   getSingleIssue,
   updateIssue,
+  deleteIssue,
 };
