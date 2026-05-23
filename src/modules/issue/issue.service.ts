@@ -206,8 +206,6 @@ const updateIssueIntoDB = async (
     [title, description, type, issueId],
   );
 
-  console.log(updatedIssue);
-
   return updatedIssue;
 };
 
