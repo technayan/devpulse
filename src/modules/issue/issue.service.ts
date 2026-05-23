@@ -102,7 +102,52 @@ const getAllIssuesFromDB = async (
   return formattedIssues;
 };
 
+//* GET SINGLE ISSUE FROM DB
+const getSingleIssueFromDB = async (id: string) => {
+  const issueData = await pool.query(
+    `
+    SELECT * FROM issues
+    WHERE id = $1
+    `,
+    [id],
+  );
+
+  if (issueData.rows.length === 0) {
+    throw new Error("Issue not found!");
+  }
+
+  const issue = issueData.rows[0];
+
+  const userData = await pool.query(
+    `
+    SELECT id, name, role FROM users
+    WHERE id = $1
+    `,
+    [issue.reporter_id],
+  );
+
+  const user = userData.rows[0];
+
+  const formattedIssue = {
+    id: issue.id,
+    title: issue.title,
+    description: issue.description,
+    type: issue.type,
+    status: issue.status,
+    reporter: {
+      id: user.id,
+      name: user.name,
+      role: user.role,
+    },
+    created_at: issue.created_at,
+    updated_at: issue.updated_at,
+  };
+
+  return formattedIssue;
+};
+
 export const issueService = {
   createIssueIntoDB,
   getAllIssuesFromDB,
+  getSingleIssueFromDB,
 };
