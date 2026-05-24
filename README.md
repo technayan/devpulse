@@ -27,7 +27,15 @@ A collaborative platform for software teams to report bugs, suggest features, an
 </ul>
 
 ## Setup steps
-First, we've initialized the data with Node.js and then installed Express.js. We've created our API endpoints according to the requirements in the route. We handled the response in the controller, and we've managed our database queries in the service. We've made a few protected routes with a user role. We've maintained user signup and login.
+<ul>
+  <li>First, we've initialized the data with Node.js</li>
+  <li>Installed Express.js.</li> 
+  <li>Created API endpoints according to the requirements in the route.</li> 
+  <li>Handled the response in the controller. </li>
+  <li>Managed our database queries in the service. </li>
+  <li>Made a few protected routes with a user role.</li>
+  <li>Maintained user signup and login.</li>
+</ul>
 
 ## API endpoint list
 <ul>
